@@ -1,6 +1,6 @@
 from State import State
 from abc import ABC, abstractmethod
-from Message import Message, Stage
+from Message import Message, Stage, ElectMessage, NotifyMessage, WakeUpMessage
 
 
 class Algorithm(ABC):
@@ -18,27 +18,28 @@ class Algorithm(ABC):
 
 class MinMax(Algorithm):
 
-    def process_message(self, node_state: State, node_value: int, incoming_message: Message):
+    def process_message(self, node_state: State, node_value: int, incoming_message: ElectMessage):
         if incoming_message.stage == Stage.EVEN and incoming_message.value > node_value:
             # Here the message sent will contain our own value
-            return State.CANDIDATE, node_value, new_message(incoming_message, node_value)
+            return State.CANDIDATE, incoming_message.value, new_message(incoming_message, incoming_message.value)
         elif incoming_message.stage == Stage.ODD and incoming_message.value < node_value:
             # Here again the message will contain our own value
-            return State.CANDIDATE, node_value, new_message(incoming_message, node_value)
+            return State.CANDIDATE, incoming_message.value, new_message(incoming_message, incoming_message.value)
         # Otherwise the node will become defeated and the message will not continue any further
         return State.DEFEATED, node_value, None
 
     def asleep_act(self, node_state: State, node_value: int, incoming_message: Message):
-        if incoming_message is None:
-            return State.CANDIDATE, node_value, Message(node_value, Stage.ODD, 0)
-
+        # If the node state is an originator then we begin the message chain.
+        if node_state == State.ORIGINATOR:
+            return State.CANDIDATE, node_value, ElectMessage(node_value, Stage.ODD, 0)
+        # In the general case we become defeated and forward the message
         return State.DEFEATED, node_value, incoming_message
 
     def candidate_act(self, node_state: State, node_value: int, incoming_message: Message):
         if node_value == incoming_message.value:
             # In this case we have been elected
             return State.LEADER, node_value, None
-
+        # General case we process the message
         return self.process_message(node_state, node_value, incoming_message)
 
     def defeated_act(self, node_state: State, node_value: int, incoming_message: Message):
@@ -46,7 +47,7 @@ class MinMax(Algorithm):
         return node_state, node_value, incoming_message
 
     def act(self, node_state: State, node_value: int, incoming_message: Message):
-        if node_state == State.ASLEEP:
+        if node_state == State.ASLEEP or node_state == State.ORIGINATOR:
             return self.asleep_act(node_state, node_value, incoming_message)
         elif node_state == State.CANDIDATE:
             return self.candidate_act(node_state, node_value, incoming_message)
@@ -60,7 +61,7 @@ class MinMaxPlus(Algorithm):
         return NotImplemented
 
 
-def forwarded_message(incoming_message: Message):
+def forwarded_message(incoming_message: ElectMessage):
     """
     Here we need only decrease the counter if it exists
     :param incoming_message:

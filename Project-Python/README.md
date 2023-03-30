@@ -1,2 +1,2 @@
 # CSI-5308
-Repository for the course "Principles of Distributed Computing"
+Project for course CSI-5308. This project is an implementation of the min-max and min-max+ algorithms.

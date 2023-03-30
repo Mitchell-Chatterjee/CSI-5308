@@ -2,6 +2,8 @@ from enum import Enum
 import igraph as ig
 import matplotlib.pyplot as plt
 from Message import Message
+from State import State
+from Algorithms import Algorithm
 
 
 class Direction(Enum):
@@ -9,19 +11,13 @@ class Direction(Enum):
     RIGHT = True
 
 
-class State(Enum):
-    ACTIVE = True
-    DEFEATED = False
-
-
 class Node:
     def __init__(self, value: int, left, right):
         self._value = value
         self._left = left
         self._right = right
-        self._state = State.ACTIVE
+        self._state = State.ASLEEP
         self._stage = 0
-        self._is_leader = False
         # TODO: Make this thread safe
         self._message_buffer = []
 
@@ -44,10 +40,6 @@ class Node:
     @property
     def stage(self):
         return self._stage
-
-    @property
-    def is_leader(self):
-        return self._isLeader
 
     @property
     def message_buffer(self):
@@ -87,24 +79,29 @@ class Node:
 
         return None
 
-    def act(self, direction: Direction, algorithm):
+    def act(self, direction: Direction, algorithm: Algorithm):
         """
         This method is used in the general case. When we are executing a turn for a specific node.
         :return: None
         """
+        # This is the first case, if we are just beginning the algorithm
         if len(self._message_buffer) > 0:
-            message = self._message_buffer.pop(0)
-            # If the message in the buffer is our own then we are done.
-            if message.value == self._value:
-                self._is_leader = True
-                return True
+            state, value, message = \
+                algorithm.act(node_state=self._state, node_value=self._value, incoming_message=self._message_buffer.pop(0))
+        else:
+            state, value, message = \
+                algorithm.act(node_state=self._state, node_value=self._value, incoming_message=None)
 
-            # Otherwise we continue on with the algorithm. This is where we will consider the incoming term
-            # TODO: Continue work from here
-            state, value, message = algorithm.act(self._state, self._value, )
+        # Update the parameters
+        self._state = state
+        self._value = value
 
-            self._state = state
-            self._value = value
+        # In this case we have elected a leader
+        if self._state == State.LEADER:
+            return True
+
+        # Otherwise we continue with the general case and send a message. If the message isn't none
+        if message is not None:
             self.send(message, direction)
         # We return False in the general case as we are not done yet.
         return False
@@ -153,7 +150,7 @@ class Ring:
                 done = elem.act(self._direction, self._algorithm)
                 if done:
                     break
-        leader_node = [node for node in self._nodes if node.is_leader][0]
+        leader_node = [node for node in self._nodes if node.state == State.LEADER][0]
         print(f"We have elected a leader: {leader_node.value}")
 
     def visualize(self):

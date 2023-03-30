@@ -15,23 +15,26 @@ def run_experiments():
     # Let's generate a couple nodes to start and make sure we can graph them properly
     nodes = generate_random_ring(10)
 
-    # Now let's link up the nodes in a ring
-    ring = Ring(nodes, Direction.RIGHT)
-
-    # Print all edges in order
-    print([elem.get_edge(Direction.RIGHT) for elem in ring.nodes])
-
     # Get both algorithms
     min_max = MinMax()
     min_max_plus = MinMaxPlus()
 
+    # Now let's link up the nodes in a ring
+    ring = Ring(nodes, Direction.RIGHT, min_max)
+
+    # Print all edges in order
+    print([elem.get_edge(Direction.RIGHT) for elem in ring.nodes])
+
     # Let's test out sending a message between two nodes
-    nodes = ring.nodes
-    node_1, node_2, node_3 = nodes[1], nodes[2], nodes[3]
-    node_1.send(message=node_1.value, direction=Direction.RIGHT)
-    node_2.act(direction=Direction.RIGHT, algorithm=min_max)
-    print(f"Node 1 value: {node_1.value}")
-    print(f"Node 3 buffer: {node_3.message_buffer}")
+    # nodes = ring.nodes
+    # node_1, node_2, node_3 = nodes[1], nodes[2], nodes[3]
+    # node_1.send(message=node_1.value, direction=Direction.RIGHT)
+    # node_2.act(direction=Direction.RIGHT, algorithm=min_max)
+    # print(f"Node 1 value: {node_1.value}")
+    # print(f"Node 3 buffer: {node_3.message_buffer}")
+
+    # Now let's test out leader election in the ring
+    ring.leader_election()
 
     # Time to visualize the graph
     # ring.visualize()

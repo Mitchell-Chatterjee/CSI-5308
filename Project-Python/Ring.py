@@ -2,6 +2,8 @@ from enum import Enum
 import igraph as ig
 import matplotlib.pyplot as plt
 from Message import Message
+from State import State
+from Algorithms import Algorithm
 
 
 class Direction(Enum):
@@ -9,17 +11,12 @@ class Direction(Enum):
     RIGHT = True
 
 
-class State(Enum):
-    ACTIVE = True
-    DEFEATED = False
-
-
 class Node:
     def __init__(self, value: int, left, right):
         self._value = value
         self._left = left
         self._right = right
-        self._state = State.ACTIVE
+        self._state = State.ASLEEP
         self._stage = 0
         # TODO: Make this thread safe
         self._message_buffer = []
@@ -82,26 +79,39 @@ class Node:
 
         return None
 
-    def act(self, direction: Direction, algorithm):
+    def act(self, direction: Direction, algorithm: Algorithm):
         """
         This method is used in the general case. When we are executing a turn for a specific node.
         :return: None
         """
+        # This is the first case, if we are just beginning the algorithm
         if len(self._message_buffer) > 0:
-            # This is where we will consider the incoming term
-            # TODO: Continue work from here
-            state, value, message = algorithm.act(self._state, self._value, self._message_buffer.pop(0))
+            state, value, message = \
+                algorithm.act(node_state=self._state, node_value=self._value, incoming_message=self._message_buffer.pop(0))
+        else:
+            state, value, message = \
+                algorithm.act(node_state=self._state, node_value=self._value, incoming_message=None)
 
-            self._state = state
-            self._value = value
+        # Update the parameters
+        self._state = state
+        self._value = value
+
+        # In this case we have elected a leader
+        if self._state == State.LEADER:
+            return True
+
+        # Otherwise we continue with the general case and send a message. If the message isn't none
+        if message is not None:
             self.send(message, direction)
-        return None
+        # We return False in the general case as we are not done yet.
+        return False
 
 
 class Ring:
-    def __init__(self, nodes: [Node], direction: Direction):
+    def __init__(self, nodes: [Node], direction: Direction, algorithm):
         self._nodes = nodes
         self._direction = direction
+        self._algorithm = algorithm
         # Create the ring
         self.create_ring()
 
@@ -123,13 +133,25 @@ class Ring:
         :return: Returns the same list of nodes, that can then be used for running algorithms.
         """
         # Connect each node to the one to their right and vice versa
-        for i in range(0, len(self._nodes)-1):
-            self._nodes[i].right = self._nodes[i+1]
-            self._nodes[i+1].left = self._nodes[i]
+        for i in range(0, len(self._nodes) - 1):
+            self._nodes[i].right = self._nodes[i + 1]
+            self._nodes[i + 1].left = self._nodes[i]
 
         # String up the last node to the first node and vice versa
         self._nodes[-1].right = self._nodes[0]
         self._nodes[0].left = self._nodes[-1]
+
+    def leader_election(self):
+        done = False
+
+        while not done:
+            # Loop over each node and act
+            for elem in self._nodes:
+                done = elem.act(self._direction, self._algorithm)
+                if done:
+                    break
+        leader_node = [node for node in self._nodes if node.state == State.LEADER][0]
+        print(f"We have elected a leader: {leader_node.value}")
 
     def visualize(self):
         # Time to visualize the graph
@@ -138,4 +160,3 @@ class Ring:
         layout = g.layout(layout='auto')
         ig.plot(g)
         plt.show()
-

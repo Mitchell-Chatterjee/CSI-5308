@@ -1,5 +1,6 @@
 from Ring import Node, Direction, Ring
 from Algorithms import MinMax, MinMaxPlus
+from State import State
 import random
 
 
@@ -33,6 +34,9 @@ def run_experiments():
     # print(f"Node 1 value: {node_1.value}")
     # print(f"Node 3 buffer: {node_3.message_buffer}")
 
+    # Let's make the third node a candidate as well
+    temp: Node = ring.nodes[2]
+    temp.state = State.ORIGINATOR
     # Now let's test out leader election in the ring
     ring.leader_election()
 

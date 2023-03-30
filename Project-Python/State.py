@@ -6,3 +6,4 @@ class State(Enum):
     CANDIDATE = "Candidate"
     DEFEATED = "Defeated"
     LEADER = "Leader"
+    ORIGINATOR = "Originator"

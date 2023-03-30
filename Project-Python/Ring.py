@@ -57,6 +57,10 @@ class Node:
     def stage(self, stage):
         self._stage = stage
 
+    @state.setter
+    def state(self, state):
+        self._state = state
+
     def get_edge(self, direction: Direction):
         """
         This function will return the edge with itself and the neighbour in the specified direction.
@@ -84,25 +88,32 @@ class Node:
         This method is used in the general case. When we are executing a turn for a specific node.
         :return: None
         """
-        # This is the first case, if we are just beginning the algorithm
-        if len(self._message_buffer) > 0:
-            state, value, message = \
-                algorithm.act(node_state=self._state, node_value=self._value, incoming_message=self._message_buffer.pop(0))
-        else:
+        # Make a special exception for the originator case
+        if self._state == State.ORIGINATOR:
             state, value, message = \
                 algorithm.act(node_state=self._state, node_value=self._value, incoming_message=None)
-
-        # Update the parameters
-        self._state = state
-        self._value = value
-
-        # In this case we have elected a leader
-        if self._state == State.LEADER:
-            return True
-
-        # Otherwise we continue with the general case and send a message. If the message isn't none
-        if message is not None:
+            # Update the parameters
+            self._state = state
+            self._value = value
             self.send(message, direction)
+
+        while len(self._message_buffer) > 0 or self._state == State.ORIGINATOR:
+            # Iterate through the message buffer until it's empty.
+            state, value, message = \
+                algorithm.act(node_state=self._state, node_value=self._value,
+                              incoming_message=self._message_buffer.pop(0))
+
+            # Update the parameters
+            self._state = state
+            self._value = value
+
+            # In this case we have elected a leader
+            if self._state == State.LEADER:
+                return True
+
+            # Otherwise we continue with the general case and send a message. If the message isn't none
+            if message is not None:
+                self.send(message, direction)
         # We return False in the general case as we are not done yet.
         return False
 
@@ -144,7 +155,12 @@ class Ring:
     def leader_election(self):
         done = False
 
+        # TODO: Remove this
+        # For now the first node will automatically become an Originator
+        self._nodes[0].state = State.ORIGINATOR
+
         while not done:
+            # Update the stage for all living nodes
             # Loop over each node and act
             for elem in self._nodes:
                 done = elem.act(self._direction, self._algorithm)

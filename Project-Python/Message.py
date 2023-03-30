@@ -1,4 +1,5 @@
 from enum import Enum
+from abc import ABC
 
 
 class Stage(Enum):
@@ -6,15 +7,24 @@ class Stage(Enum):
     ODD = False
 
 
-class Message:
-    def __init__(self, value: int, stage: Stage, counter: int):
+class Message(ABC):
+    def __init__(self, value):
         self._value = value
-        self._stage = stage
-        self._counter = counter
 
     @property
     def value(self):
         return self._value
+
+    @value.setter
+    def value(self, value):
+        self._value = value
+
+
+class ElectMessage(Message):
+    def __init__(self, value: int, stage: Stage, counter: int):
+        self._stage = stage
+        self._counter = counter
+        super().__init__(value)
 
     @property
     def stage(self):
@@ -24,10 +34,6 @@ class Message:
     def counter(self):
         return self._counter
 
-    @value.setter
-    def value(self, value):
-        self._value = value
-
     @stage.setter
     def stage(self, stage):
         self._stage = stage
@@ -35,3 +41,13 @@ class Message:
     @counter.setter
     def counter(self, counter):
         self._counter = counter
+
+
+class NotifyMessage(Message):
+    def __init__(self, value: None):
+        super().__init__(value)
+
+
+class WakeUpMessage(Message):
+    def __init__(self, value):
+        super().__init__(value)

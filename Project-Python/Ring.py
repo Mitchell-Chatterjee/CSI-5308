@@ -1,9 +1,9 @@
 from enum import Enum
 import igraph as ig
 import matplotlib.pyplot as plt
-from Message import Message
 from State import State
 from Algorithms import Algorithm
+from threading import Thread
 
 
 class Direction(Enum):
@@ -86,7 +86,7 @@ class Node:
     def act(self, direction: Direction, algorithm: Algorithm):
         """
         This method is used in the general case. When we are executing a turn for a specific node.
-        :return: None
+        :return: (done)
         """
         # Make a special exception for the originator case
         if self._state == State.ORIGINATOR:
@@ -159,14 +159,39 @@ class Ring:
         # For now the first node will automatically become an Originator
         self._nodes[0].state = State.ORIGINATOR
 
-        while not done:
-            # Loop over each node and act
-            for elem in self._nodes:
-                done = elem.act(self._direction, self._algorithm)
-                if done:
-                    break
-        leader_node = [node for node in self._nodes if node.state == State.LEADER][0]
-        print(f"We have elected a leader: {leader_node.value}")
+        # Each thread will begin at an originator and follow its message around the ring until
+        # No more messages are being sent from this node
+
+        # Create a pool of threads for each originator
+        thread_pool = [
+            Thread(target=Ring.thread_act, args=(self, node, self._direction, self._algorithm, ))
+            for node in self._nodes if node.state == State.ORIGINATOR
+        ]
+
+        # Starting all the threads
+        # map(lambda thread: thread.start(), thread_pool)
+        for thread in thread_pool:
+            thread.start()
+
+        # Joining all the threads
+        # map(lambda thread: thread.join, thread_pool)
+        for thread in thread_pool:
+            thread.join()
+
+        # leader_node = [node for node in self._nodes if node.state == State.LEADER][0]
+        # print(f"We have elected a leader: {leader_node.value}")
+
+    def thread_act(self, node: Node, direction: Direction, algorithm: Algorithm):
+        """
+        This thread will follow the message as far as it can go and then the thread will die.
+        :param node:
+        :param direction:
+        :param algorithm:
+        :return:
+        """
+        print(f"Worker thread with value {node.value}")
+        node.act(direction, algorithm)
+        return None
 
     def visualize(self):
         # Time to visualize the graph

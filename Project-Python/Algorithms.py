@@ -21,10 +21,10 @@ class MinMax(Algorithm):
     def process_message(self, node_state: State, node_value: int, incoming_message: ElectMessage):
         if incoming_message.stage == Stage.EVEN and incoming_message.value > node_value:
             # Here the message sent will contain our own value
-            return State.CANDIDATE, incoming_message.value, new_message(incoming_message, incoming_message.value)
+            return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
         elif incoming_message.stage == Stage.ODD and incoming_message.value < node_value:
             # Here again the message will contain our own value
-            return State.CANDIDATE, incoming_message.value, new_message(incoming_message, incoming_message.value)
+            return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
         # Otherwise the node will become defeated and the message will not continue any further
         return State.DEFEATED, node_value, None
 
@@ -72,14 +72,12 @@ def forwarded_message(incoming_message: ElectMessage):
     return incoming_message
 
 
-def new_message(incoming_message: Message, node_value: int):
+def new_message(incoming_message: Message):
     """
     Here we need to update the value in the message, update the stage and decrease the counter.
     :param incoming_message:
-    :param node_value:
     :return:
     """
-    incoming_message.value = node_value
     incoming_message.stage = Stage.EVEN if incoming_message.stage == Stage.ODD else Stage.ODD
 
     # TODO: Fix this to use the Fibonacci sequence

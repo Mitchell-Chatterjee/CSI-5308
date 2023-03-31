@@ -160,7 +160,6 @@ class Ring:
         self._nodes[0].state = State.ORIGINATOR
 
         while not done:
-            # Update the stage for all living nodes
             # Loop over each node and act
             for elem in self._nodes:
                 done = elem.act(self._direction, self._algorithm)

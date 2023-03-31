@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from State import State
 from Algorithms import Algorithm
 from threading import Thread
+from random import sample
 
 
 class Direction(Enum):
@@ -86,7 +87,7 @@ class Node:
     def act(self, direction: Direction, algorithm: Algorithm):
         """
         This method is used in the general case. When we are executing a turn for a specific node.
-        :return: (done)
+        :return: (continue) --> (bool) This is a boolean value indicating whether we should continue on this thread.
         """
         # Make a special exception for the originator case
         if self._state == State.ORIGINATOR:
@@ -96,6 +97,7 @@ class Node:
             self._state = state
             self._value = value
             self.send(message, direction)
+            return True
 
         while len(self._message_buffer) > 0 or self._state == State.ORIGINATOR:
             # Iterate through the message buffer until it's empty.
@@ -107,14 +109,11 @@ class Node:
             self._state = state
             self._value = value
 
-            # In this case we have elected a leader
-            if self._state == State.LEADER:
-                return True
-
-            # Otherwise we continue with the general case and send a message. If the message isn't none
+            # Otherwise we continue with the general case and send a message. If the message isn't none.
             if message is not None:
                 self.send(message, direction)
-        # We return False in the general case as we are not done yet.
+                return True
+        # We return False if we do not send a message.
         return False
 
 
@@ -152,12 +151,13 @@ class Ring:
         self._nodes[-1].right = self._nodes[0]
         self._nodes[0].left = self._nodes[-1]
 
-    def leader_election(self):
-        done = False
+    def leader_election(self, number_of_originators):
+        if number_of_originators > len(self._nodes):
+            raise Exception("Number of originators is greater than the length of the list.")
 
-        # TODO: Remove this
-        # For now the first node will automatically become an Originator
-        self._nodes[0].state = State.ORIGINATOR
+        # The originators are chosen at random
+        for node in sample(self._nodes, number_of_originators):
+            node.state = State.ORIGINATOR
 
         # Each thread will begin at an originator and follow its message around the ring until
         # No more messages are being sent from this node
@@ -169,29 +169,29 @@ class Ring:
         ]
 
         # Starting all the threads
-        # map(lambda thread: thread.start(), thread_pool)
         for thread in thread_pool:
             thread.start()
 
         # Joining all the threads
-        # map(lambda thread: thread.join, thread_pool)
         for thread in thread_pool:
             thread.join()
 
-        # leader_node = [node for node in self._nodes if node.state == State.LEADER][0]
-        # print(f"We have elected a leader: {leader_node.value}")
+        leader_node = [node for node in self._nodes if node.state == State.LEADER][0]
+        print(f"We have elected a leader: {leader_node.value}")
 
     def thread_act(self, node: Node, direction: Direction, algorithm: Algorithm):
         """
-        This thread will follow the message as far as it can go and then the thread will die.
-        :param node:
-        :param direction:
-        :param algorithm:
-        :return:
+        Each thread will begin at an originator and follow its message around the ring until
+        No more messages are being sent from this node
+        :param node: The node we begin at. An originator.
+        :param direction: The direction to send messages.
+        :param algorithm: The algorithm we are using.
+        :return: None
         """
-        print(f"Worker thread with value {node.value}")
-        node.act(direction, algorithm)
-        return None
+        # We will continue until we are told to stop. As we are no longer forwarding messages.
+        while node.act(direction, algorithm):
+            node = node.right if direction == Direction.RIGHT else node.left
+        return
 
     def visualize(self):
         # Time to visualize the graph

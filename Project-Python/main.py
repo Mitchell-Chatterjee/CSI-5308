@@ -26,19 +26,8 @@ def run_experiments():
     # Print all edges in order
     print([elem.get_edge(Direction.RIGHT) for elem in ring.nodes])
 
-    # Let's test out sending a message between two nodes
-    # nodes = ring.nodes
-    # node_1, node_2, node_3 = nodes[1], nodes[2], nodes[3]
-    # node_1.send(message=node_1.value, direction=Direction.RIGHT)
-    # node_2.act(direction=Direction.RIGHT, algorithm=min_max)
-    # print(f"Node 1 value: {node_1.value}")
-    # print(f"Node 3 buffer: {node_3.message_buffer}")
-
-    # Let's make the third node a candidate as well
-    temp: Node = ring.nodes[2]
-    temp.state = State.ORIGINATOR
     # Now let's test out leader election in the ring
-    ring.leader_election()
+    ring.leader_election(number_of_originators=10)
 
     # Time to visualize the graph
     # ring.visualize()

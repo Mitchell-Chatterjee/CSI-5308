@@ -96,7 +96,8 @@ class MinMaxPlus(Algorithm):
             if incoming_message.counter == 0:
                 return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
             # This is the case that handles rule 4
-            if node_stage % 2 == 0 and incoming_message.stage == node_stage + 1 and incoming_message.value < node_value:
+            elif node_stage % 2 == 0 and incoming_message.stage == node_stage + 1 \
+                    and incoming_message.value < node_value:
                 return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
 
         # Simply forward the message, otherwise.

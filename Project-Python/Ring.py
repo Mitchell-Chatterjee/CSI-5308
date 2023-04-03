@@ -92,7 +92,8 @@ class Node:
         # Make a special exception for the originator case
         if self._state == State.ORIGINATOR:
             state, value, message = \
-                algorithm.act(node_state=self._state, node_value=self._value, incoming_message=None)
+                algorithm.act(node_state=self._state, node_value=self._value, node_stage=self._stage,
+                              incoming_message=None)
             # Update the parameters
             self._state = state
             self._value = value
@@ -104,7 +105,7 @@ class Node:
         while len(self._message_buffer) > 0 or self._state == State.ORIGINATOR:
             # Iterate through the message buffer until it's empty.
             state, value, message = \
-                algorithm.act(node_state=self._state, node_value=self._value,
+                algorithm.act(node_state=self._state, node_value=self._value, node_stage=self._stage,
                               incoming_message=self._message_buffer.pop(0))
 
             # Update the parameters

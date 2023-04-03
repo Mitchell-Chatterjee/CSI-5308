@@ -1,6 +1,6 @@
 from State import State
 from abc import ABC, abstractmethod
-from Message import Message, Stage, ElectMessage, NotifyMessage, WakeUpMessage
+from Message import Message, ElectMessage, NotifyMessage, WakeUpMessage
 
 
 class Algorithm(ABC):
@@ -19,23 +19,24 @@ class Algorithm(ABC):
 class MinMax(Algorithm):
 
     def process_message(self, node_state: State, node_value: int, incoming_message: ElectMessage):
-        if incoming_message.stage == Stage.EVEN and incoming_message.value > node_value:
+        if incoming_message.stage % 2 == 0 and incoming_message.value > node_value:
             # Here the message sent will contain our own value
             return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
-        elif incoming_message.stage == Stage.ODD and incoming_message.value < node_value:
+        elif incoming_message.stage % 2 == 1 and incoming_message.value < node_value:
             # Here again the message will contain our own value
             return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
         # Otherwise the node will become defeated and the message will not continue any further
         return State.DEFEATED, node_value, None
 
     def asleep_act(self, node_state: State, node_value: int, incoming_message: Message):
-        # If the node state is an originator then we begin the message chain.
-        if node_state == State.ORIGINATOR:
-            return State.CANDIDATE, node_value, ElectMessage(node_value, Stage.ODD, 0)
         # In the general case we become defeated and forward the message
         return State.DEFEATED, node_value, incoming_message
 
-    def candidate_act(self, node_state: State, node_value: int, incoming_message: Message):
+    def originator_act(self, node_state: State, node_value: int, incoming_message: Message):
+        # If the node state is an originator then we begin the message chain.
+        return State.CANDIDATE, node_value, ElectMessage(node_value, 1, 0)
+
+    def candidate_act(self, node_state: State, node_value: int, incoming_message: ElectMessage):
         if node_value == incoming_message.value:
             # In this case we have been elected
             return State.LEADER, node_value, None
@@ -47,7 +48,9 @@ class MinMax(Algorithm):
         return node_state, node_value, incoming_message
 
     def act(self, node_state: State, node_value: int, incoming_message: Message):
-        if node_state == State.ASLEEP or node_state == State.ORIGINATOR:
+        if node_state == State.ORIGINATOR:
+            return self.originator_act(node_state, node_value, incoming_message)
+        elif node_state == State.ASLEEP:
             return self.asleep_act(node_state, node_value, incoming_message)
         elif node_state == State.CANDIDATE:
             return self.candidate_act(node_state, node_value, incoming_message)
@@ -78,7 +81,7 @@ def new_message(incoming_message: Message):
     :param incoming_message:
     :return:
     """
-    incoming_message.stage = Stage.EVEN if incoming_message.stage == Stage.ODD else Stage.ODD
+    incoming_message.stage += 1
 
     # TODO: Fix this to use the Fibonacci sequence
     # Note that we update the counter either way, but it doesn't really matter as we won't check it in the odd stages

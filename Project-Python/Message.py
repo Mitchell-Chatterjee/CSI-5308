@@ -2,11 +2,6 @@ from enum import Enum
 from abc import ABC
 
 
-class Stage(Enum):
-    EVEN = True
-    ODD = False
-
-
 class Message(ABC):
     def __init__(self, value):
         self._value = value
@@ -21,7 +16,7 @@ class Message(ABC):
 
 
 class ElectMessage(Message):
-    def __init__(self, value: int, stage: Stage, counter: int):
+    def __init__(self, value: int, stage: int, counter: int):
         self._stage = stage
         self._counter = counter
         super().__init__(value)

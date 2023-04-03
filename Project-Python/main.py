@@ -27,7 +27,7 @@ def run_experiments():
     print([elem.get_edge(Direction.RIGHT) for elem in ring.nodes])
 
     # Now let's test out leader election in the ring
-    ring.leader_election(number_of_originators=10)
+    ring.leader_election(number_of_originators=2)
 
     # Time to visualize the graph
     # ring.visualize()

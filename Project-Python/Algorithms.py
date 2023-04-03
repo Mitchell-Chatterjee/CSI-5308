@@ -67,9 +67,6 @@ class MinMaxPlus(Algorithm):
         elif incoming_message.stage % 2 == 1 and incoming_message.value < node_value:
             # Here again the message will contain our own value
             return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
-        elif incoming_message.counter == 0:
-            # This handles the case where the counter becomes 0 at a Candidate that it would otherwise be defeated
-            return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
         # Otherwise the node will become defeated and the message will not continue any further
         return State.DEFEATED, node_value, None
 
@@ -85,12 +82,11 @@ class MinMaxPlus(Algorithm):
         # In this case we have been elected
         if node_value == incoming_message.value:
             return State.LEADER, node_value, None
-
+        # Case where counter becomes 0. Placing this here, preempts other cases in which we may become defeated.
+        elif incoming_message.counter == 0:
+            return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
         # In this case, the candidate will become defeated if it is receiving a message from the next step
-        if node_stage < incoming_message.stage:
-            # This handles the case where the counter becomes 0 at a Candidate that it would otherwise be defeated
-            if incoming_message.counter == 0:
-                return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
+        elif node_stage < incoming_message.stage:
             return State.DEFEATED, node_value, forwarded_message(incoming_message)
 
         # General case we process the message
@@ -105,13 +101,12 @@ class MinMaxPlus(Algorithm):
             elif node_stage % 2 == 0 and incoming_message.stage == node_stage + 1 \
                     and incoming_message.value < node_value:
                 return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
-
         # Simply forward the message, otherwise.
         return node_state, node_value, forwarded_message(incoming_message)
 
     def act(self, node_state: State, node_value: int, node_stage: int, incoming_message: Message):
-        # Reduce message counter if we are in an even stage
-        if isinstance(incoming_message, ElectMessage) and incoming_message.stage % 2 == 0:
+        # Reduce message counter
+        if isinstance(incoming_message, ElectMessage):
             incoming_message.counter -= 1
 
         if node_state == State.ORIGINATOR:
@@ -144,12 +139,11 @@ def fibonacci_number(index):
 
 def forwarded_message(incoming_message: ElectMessage):
     """
-    Here we need only decrease the counter if it exists
+    Here we simply decrease the counter and send the message on down the line.
     :param incoming_message:
     :return:
     """
-    if incoming_message.stage % 2 == 0:
-        incoming_message.counter -= 1
+    incoming_message.counter -= 1
     return incoming_message
 
 

@@ -111,7 +111,7 @@ class Node:
             # Update the parameters
             self._state = state
             self._value = value
-            self._stage += 1
+            self._stage = message.stage
 
             # Otherwise we continue with the general case and send a message. If the message isn't none.
             if message is not None:

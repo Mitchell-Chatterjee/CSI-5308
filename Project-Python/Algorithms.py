@@ -12,7 +12,7 @@ class Algorithm(ABC):
         :param node_value: The value of the current node.
         :param node_stage: The stage that the current node is in.
         :param incoming_message: The incoming message in the message buffer.
-        :return: (State, int, any) --> (node_state, node_value, outgoing_message)
+        :return: (State, int, Message) --> (node_state, node_value, outgoing_message)
         """
         pass
 
@@ -90,11 +90,15 @@ class MinMaxPlus(Algorithm):
         # General case we process the message
         return self.process_message(node_state, node_value, incoming_message)
 
-    def defeated_act(self, node_state: State, node_value: int, incoming_message: Message):
+    def defeated_act(self, node_state: State, node_value: int, node_stage: int, incoming_message: Message):
         if isinstance(incoming_message, ElectMessage):
             # This case handles when the node is defeated and the counter reaches 0 in an even stage
-            if incoming_message.stage % 2 == 0 and incoming_message.counter == 0:
+            if incoming_message.counter == 0:
                 return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
+            # This is the case that handles rule 4
+            if node_stage % 2 == 0 and incoming_message.stage == node_stage + 1 and incoming_message.value < node_value:
+                return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
+
         # Simply forward the message, otherwise.
         return node_state, node_value, forwarded_message(incoming_message)
 
@@ -113,7 +117,7 @@ class MinMaxPlus(Algorithm):
         # TODO: Check this
         # We have to separate out this if statement in case a node becomes defeated and then must be revived.
         if node_state == State.DEFEATED:
-            return self.defeated_act(node_state, node_value, incoming_message)
+            return self.defeated_act(node_state, node_value, node_stage, incoming_message)
 
 
 def fibonacci_number(index):
@@ -154,6 +158,6 @@ def new_message(incoming_message: ElectMessage):
     incoming_message.stage += 1
 
     # Update the counter to the i-th fibonacci number if we are in an even stage.
-    incoming_message.counter = fibonacci_number(incoming_message.stage) if incoming_message.stage % 2 == 0 else 0
+    incoming_message.counter = fibonacci_number(incoming_message.stage) if incoming_message.stage % 2 == 0 else -1
 
     return incoming_message

@@ -72,7 +72,7 @@ class MinMaxPlus(Algorithm):
 
     def asleep_act(self, node_state: State, node_value: int, incoming_message: Message):
         # In the general case we become defeated and forward the message
-        return State.DEFEATED, node_value, incoming_message
+        return State.DEFEATED, node_value, forwarded_message(incoming_message)
 
     def originator_act(self, node_state: State, node_value: int, incoming_message: Message):
         # If the node state is an originator then we begin the message chain.
@@ -85,7 +85,7 @@ class MinMaxPlus(Algorithm):
 
         # In this case, the candidate will become defeated if it is receiving a message from the next step
         if node_stage < incoming_message.stage:
-            return State.DEFEATED, node_value, incoming_message
+            return State.DEFEATED, node_value, forwarded_message(incoming_message)
 
         # General case we process the message
         return self.process_message(node_state, node_value, incoming_message)
@@ -96,7 +96,7 @@ class MinMaxPlus(Algorithm):
             if incoming_message.stage % 2 == 0 and incoming_message.counter == 0:
                 return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
         # Simply forward the message, otherwise.
-        return node_state, node_value, incoming_message
+        return node_state, node_value, forwarded_message(incoming_message)
 
     def act(self, node_state: State, node_value: int, node_stage: int, incoming_message: Message):
         # Reduce message counter if we are in an even stage
@@ -145,7 +145,7 @@ def forwarded_message(incoming_message: ElectMessage):
     return incoming_message
 
 
-def new_message(incoming_message: Message):
+def new_message(incoming_message: ElectMessage):
     """
     Here we need to update the value in the message, update the stage and decrease the counter.
     :param incoming_message:
@@ -153,9 +153,7 @@ def new_message(incoming_message: Message):
     """
     incoming_message.stage += 1
 
-    # TODO: Fix this to use the Fibonacci sequence
-    # Note that we update the counter either way, but it doesn't really matter as we won't check it in the odd stages
-    # of MinMaxPlus.
-    incoming_message.counter = 0
+    # Update the counter to the i-th fibonacci number if we are in an even stage.
+    incoming_message.counter = fibonacci_number(incoming_message.stage) if incoming_message.stage % 2 == 0 else 0
 
     return incoming_message

@@ -21,7 +21,7 @@ def run_experiments():
     min_max_plus = MinMaxPlus()
 
     # Now let's link up the nodes in a ring
-    ring = Ring(nodes, Direction.RIGHT, min_max)
+    ring = Ring(nodes, Direction.RIGHT, min_max_plus)
 
     # Print all edges in order
     print([elem.get_edge(Direction.RIGHT) for elem in ring.nodes])

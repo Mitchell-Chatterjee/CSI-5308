@@ -67,8 +67,8 @@ class MinMaxPlus(Algorithm):
         elif incoming_message.stage % 2 == 1 and incoming_message.value < node_value:
             # Here again the message will contain our own value
             return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
-        elif incoming_message.counter == 0:
-            # This handles the case where the counter becomes 0 at a Candidate that it would otherwise defeat
+        elif incoming_message.stage % 2 == 0 and incoming_message.counter == 0:
+            # This handles the case where the counter becomes 0 at a Candidate that it would otherwise be defeated
             return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
         # Otherwise the node will become defeated and the message will not continue any further
         return State.DEFEATED, node_value, None
@@ -133,10 +133,10 @@ def fibonacci_number(index):
     sequence = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233]
 
     # We will extend the series if it is not long enough.
-    while index > len(sequence) - 1:
+    while index + 2 > len(sequence) - 1:
         sequence.append(sequence[len(sequence) - 1] + sequence[len(sequence) - 2])
 
-    return sequence[index]
+    return sequence[index + 2]
 
 
 def forwarded_message(incoming_message: ElectMessage):

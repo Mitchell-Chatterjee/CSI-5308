@@ -67,7 +67,7 @@ class MinMaxPlus(Algorithm):
         elif incoming_message.stage % 2 == 1 and incoming_message.value < node_value:
             # Here again the message will contain our own value
             return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
-        elif incoming_message.stage % 2 == 0 and incoming_message.counter == 0:
+        elif incoming_message.counter == 0:
             # This handles the case where the counter becomes 0 at a Candidate that it would otherwise be defeated
             return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
         # Otherwise the node will become defeated and the message will not continue any further
@@ -88,6 +88,9 @@ class MinMaxPlus(Algorithm):
 
         # In this case, the candidate will become defeated if it is receiving a message from the next step
         if node_stage < incoming_message.stage:
+            # This handles the case where the counter becomes 0 at a Candidate that it would otherwise be defeated
+            if incoming_message.counter == 0:
+                return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
             return State.DEFEATED, node_value, forwarded_message(incoming_message)
 
         # General case we process the message

@@ -19,7 +19,6 @@ class Node:
         self._right = right
         self._state = State.ASLEEP
         self._stage = 0
-        # TODO: Make this thread safe
         self._message_buffer = []
 
     @property

@@ -67,6 +67,9 @@ class MinMaxPlus(Algorithm):
         elif incoming_message.stage % 2 == 1 and incoming_message.value < node_value:
             # Here again the message will contain our own value
             return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
+        elif incoming_message.counter == 0:
+            # This handles the case where the counter becomes 0 at a Candidate that it would otherwise defeat
+            return State.CANDIDATE, incoming_message.value, new_message(incoming_message)
         # Otherwise the node will become defeated and the message will not continue any further
         return State.DEFEATED, node_value, None
 
@@ -114,10 +117,7 @@ class MinMaxPlus(Algorithm):
             return self.asleep_act(node_state, node_value, incoming_message)
         elif node_state == State.CANDIDATE:
             return self.candidate_act(node_state, node_value, node_stage, incoming_message)
-
-        # TODO: Check this
-        # We have to separate out this if statement in case a node becomes defeated and then must be revived.
-        if node_state == State.DEFEATED:
+        elif node_state == State.DEFEATED:
             return self.defeated_act(node_state, node_value, node_stage, incoming_message)
 
 

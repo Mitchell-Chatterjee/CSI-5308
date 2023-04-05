@@ -5,6 +5,10 @@ from State import State
 from Algorithms import Algorithm
 from threading import Thread
 from random import sample
+import igraph as ig
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from functools import partial
 
 
 class Direction(Enum):
@@ -187,10 +191,47 @@ class Ring:
             self._messages += 1
         return
 
+    def update_graph(self, ax, g, layout, frame):
+        # Remove plot elements from the previous frame
+        ax.clear()
+
+        # Fix limits (unless you want a zoom-out effect)
+        ax.set_xlim(-1.5, 1.5)
+        ax.set_ylim(-1.5, 1.5)
+
+        if frame < 10:
+            # Plot subgraph
+            gd = g.subgraph(range(frame))
+        elif frame == 10:
+            # In the second-to-last frame, plot all vertices but skip the last
+            # edge, which will only be shown in the last frame
+            gd = g.copy()
+            gd.delete_edges(9)
+        else:
+            # Last frame
+            gd = g
+
+        ig.plot(gd, target=ax, layout=layout[:frame], vertex_color="yellow")
+
+        # Capture handles for blitting
+        if frame == 0:
+            nhandles = 0
+        elif frame == 1:
+            nhandles = 1
+        elif frame < 11:
+            # vertex, 2 for each edge
+            nhandles = 3 * frame
+        else:
+            # The final edge closing the circle
+            nhandles = 3 * (frame - 1) + 2
+
+        handles = ax.get_children()[:nhandles]
+        return handles
+
     def visualize(self):
-        # Time to visualize the graph
-        ig.config['plotting.backend'] = 'matplotlib'
-        g = ig.Graph(edges=[elem.get_edge(Direction.RIGHT) for elem in self._nodes])
-        layout = g.layout(layout='auto')
-        ig.plot(g)
-        plt.show()
+        g = ig.Graph.Ring(10, directed=False)
+        layout = g.layout_circle()
+        fig, ax = plt.subplots()
+        ani = animation.FuncAnimation(fig, partial(self.update_graph, ax, g, layout), 12, interval=500, blit=True)
+        writergif = animation.PillowWriter(fps=1)
+        ani.save('basic_animation.gif', writer=writergif)

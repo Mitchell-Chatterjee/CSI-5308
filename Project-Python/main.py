@@ -1,11 +1,10 @@
 from Ring import Node, Direction, Ring
 from Algorithms import MinMax, MinMaxPlus
-from State import State
 import random
 
 
 def generate_random_ring(size):
-    temp = [i for i in range(1, size+1)]
+    temp = [i for i in range(1, size + 1)]
     random.shuffle(temp)
     nodes = [Node(value, None, None) for value in temp]
 
@@ -25,6 +24,9 @@ def run_experiments(number_of_originators=2, size_of_ring=10, direction=Directio
     ring_min_max = Ring(nodes_min_max, direction, min_max)
     ring_min_max_plus = Ring(nodes_min_max_plus, direction, min_max_plus)
 
+    # Time to visualize the graph
+    ring_min_max.visualize()
+
     # Print all edges in order
     print(f"The edges (in direction {direction.value}) for the ring executing min-max are: "
           f"{[elem.get_edge(Direction.RIGHT) for elem in ring_min_max.nodes]}")
@@ -43,7 +45,7 @@ def run_experiments(number_of_originators=2, size_of_ring=10, direction=Directio
     print(f"It required a total of {messages_min_max_plus} messages")
 
     # Time to visualize the graph
-    # ring.visualize()
+    ring_min_max.visualize()
 
 
 if __name__ == '__main__':

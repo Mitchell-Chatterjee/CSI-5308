@@ -218,7 +218,7 @@ class Ring:
         colour_dict = {State.CANDIDATE: "blue", State.ORIGINATOR: "blue", State.LEADER: "red", State.ASLEEP: "grey",
                        State.DEFEATED: "grey"}
         vertex_colours = [colour_dict[node.state] for node in self._nodes]
-        ig.plot(gd, target=ax, layout=layout[:frame], vertex_label=vertex_labels, vertex_color="grey")
+        ig.plot(gd, target=ax, layout=layout[:frame], vertex_label=vertex_labels, vertex_color=vertex_colours)
 
         # Capture handles for blitting
         if frame == 0:

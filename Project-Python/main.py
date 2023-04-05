@@ -21,8 +21,8 @@ def run_experiments(number_of_originators=2, size_of_ring=10, direction=Directio
     min_max_plus = MinMaxPlus()
 
     # Now let's link up the nodes in a ring
-    ring_min_max = Ring(nodes_min_max, direction, min_max)
-    ring_min_max_plus = Ring(nodes_min_max_plus, direction, min_max_plus)
+    ring_min_max = Ring(nodes_min_max, direction, min_max, number_of_originators)
+    ring_min_max_plus = Ring(nodes_min_max_plus, direction, min_max_plus, number_of_originators)
 
     # Time to visualize the graph
     ring_min_max.visualize()
@@ -35,12 +35,12 @@ def run_experiments(number_of_originators=2, size_of_ring=10, direction=Directio
 
     # Now let's test out leader election in the ring
     leader_node_min_max, messages_min_max = \
-        ring_min_max.leader_election(number_of_originators=number_of_originators)
+        ring_min_max.leader_election()
     print(f"We have elected a leader for min-max: {leader_node_min_max}")
     print(f"It required a total of {messages_min_max} messages\n\n")
 
     leader_node_min_max_plus, messages_min_max_plus = \
-        ring_min_max_plus.leader_election(number_of_originators=number_of_originators)
+        ring_min_max_plus.leader_election()
     print(f"We have elected a leader for min-max-plus: {leader_node_min_max_plus}")
     print(f"It required a total of {messages_min_max_plus} messages")
 

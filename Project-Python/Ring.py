@@ -113,14 +113,14 @@ class Node:
 
 
 class Ring:
-    def __init__(self, nodes: [Node], direction: Direction, algorithm):
+    def __init__(self, nodes: [Node], direction: Direction, algorithm, number_of_originators):
         self._nodes = nodes
         self._direction = direction
         self._algorithm = algorithm
         # This value will maintain the total number of messages we send
         self._messages = 0
         # Create the ring
-        self.create_ring()
+        self.create_ring(number_of_originators=number_of_originators)
 
     @property
     def nodes(self):
@@ -134,11 +134,18 @@ class Ring:
     def direction(self, direction):
         self._direction = direction
 
-    def create_ring(self):
+    def create_ring(self, number_of_originators):
         """
         This function will string up the nodes in order to form a ring. From left to right.
         :return: Returns the same list of nodes, that can then be used for running algorithms.
         """
+        if number_of_originators > len(self._nodes):
+            raise Exception("Number of originators is greater than the length of the list.")
+
+        # The originators are chosen at random
+        for node in sample(self._nodes, number_of_originators):
+            node.state = State.ORIGINATOR
+
         # Connect each node to the one to their right and vice versa
         for i in range(0, len(self._nodes) - 1):
             self._nodes[i].right = self._nodes[i + 1]
@@ -148,16 +155,12 @@ class Ring:
         self._nodes[-1].right = self._nodes[0]
         self._nodes[0].left = self._nodes[-1]
 
-    def leader_election(self, number_of_originators):
-        if number_of_originators > len(self._nodes):
-            raise Exception("Number of originators is greater than the length of the list.")
-
-        # The originators are chosen at random
-        for node in sample(self._nodes, number_of_originators):
-            node.state = State.ORIGINATOR
-
-        # Each thread will begin at an originator and follow its message around the ring until
-        # No more messages are being sent from this node
+    def leader_election(self):
+        """
+        Each thread will begin at an originator and follow its message around the ring until
+        No more messages are being sent from this node
+        :return: The leader and the number of messages for this algorithm
+        """
 
         # Create a pool of threads for each originator
         thread_pool = [
@@ -211,7 +214,11 @@ class Ring:
             # Last frame
             gd = g
 
-        ig.plot(gd, target=ax, layout=layout[:frame], vertex_color="yellow")
+        vertex_labels = [node.value for node in self._nodes]
+        colour_dict = {State.CANDIDATE: "blue", State.ORIGINATOR: "blue", State.LEADER: "red", State.ASLEEP: "grey",
+                       State.DEFEATED: "grey"}
+        vertex_colours = [colour_dict[node.state] for node in self._nodes]
+        ig.plot(gd, target=ax, layout=layout[:frame], vertex_label=vertex_labels, vertex_color="grey")
 
         # Capture handles for blitting
         if frame == 0:
@@ -229,7 +236,7 @@ class Ring:
         return handles
 
     def visualize(self):
-        g = ig.Graph.Ring(10, directed=False)
+        g = ig.Graph.Ring(len(self._nodes), directed=False)
         layout = g.layout_circle()
         fig, ax = plt.subplots()
         ani = animation.FuncAnimation(fig, partial(self.update_graph, ax, g, layout), 12, interval=500, blit=True)

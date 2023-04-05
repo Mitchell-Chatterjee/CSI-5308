@@ -8,8 +8,8 @@ from random import sample
 
 
 class Direction(Enum):
-    LEFT = False
-    RIGHT = True
+    LEFT = "Left"
+    RIGHT = "Right"
 
 
 class Node:
@@ -113,6 +113,8 @@ class Ring:
         self._nodes = nodes
         self._direction = direction
         self._algorithm = algorithm
+        # This value will maintain the total number of messages we send
+        self._messages = 0
         # Create the ring
         self.create_ring()
 
@@ -168,7 +170,7 @@ class Ring:
             thread.join()
 
         leader_node = [node for node in self._nodes if node.state == State.LEADER][0]
-        print(f"We have elected a leader: {leader_node.value}")
+        return leader_node.value, self._messages
 
     def thread_act(self, node: Node, direction: Direction, algorithm: Algorithm):
         """
@@ -182,6 +184,7 @@ class Ring:
         # We will continue until we are told to stop. As we are no longer forwarding messages.
         while node.act(direction, algorithm):
             node = node.right if direction == Direction.RIGHT else node.left
+            self._messages += 1
         return
 
     def visualize(self):

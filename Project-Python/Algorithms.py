@@ -1,6 +1,6 @@
-from Support_Classes.State import State
+from State import State
 from abc import ABC, abstractmethod
-from Support_Classes.Message import Message, ElectMessage, NotifyMessage, WakeUpMessage
+from Message import Message, ElectMessage
 
 
 class Algorithm(ABC):

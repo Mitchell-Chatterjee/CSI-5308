@@ -1,5 +1,5 @@
-from Support_Classes.Ring import Node, Direction, Ring
-from Support_Classes.Algorithms import MinMax, MinMaxPlus
+from Ring import Node, Direction, Ring
+from Algorithms import MinMax, MinMaxPlus
 import random
 
 

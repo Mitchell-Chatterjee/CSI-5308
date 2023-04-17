@@ -1,9 +1,9 @@
 import copy
 from enum import Enum
 
-from Support_Classes.Message import Message
-from Support_Classes.State import State
-from Support_Classes.Algorithms import Algorithm
+from Message import Message
+from State import State
+from Algorithms import Algorithm
 from threading import Thread
 from random import sample
 import igraph as ig

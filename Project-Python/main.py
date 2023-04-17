@@ -11,7 +11,7 @@ def generate_random_ring(size):
     return nodes
 
 
-def run_experiments(number_of_originators=2, size_of_ring=10, direction=Direction.RIGHT):
+def run_experiments(number_of_originators=2, size_of_ring=10, direction=Direction.RIGHT, animation_speed=500):
     # Let's generate a couple nodes to start and make sure we can graph them properly
     nodes_min_max = generate_random_ring(size_of_ring)
     nodes_min_max_plus = generate_random_ring(size_of_ring)
@@ -36,18 +36,18 @@ def run_experiments(number_of_originators=2, size_of_ring=10, direction=Directio
     print(f"We have elected a leader for min-max: {leader_node_min_max}")
     print(f"It required a total of {messages_min_max} messages\n\n")
 
-    # Time to visualize the graph
-    # TODO: Move this from here
-    ring_min_max.visualize()
-
     leader_node_min_max_plus, messages_min_max_plus = \
         ring_min_max_plus.leader_election()
     print(f"We have elected a leader for min-max-plus: {leader_node_min_max_plus}")
     print(f"It required a total of {messages_min_max_plus} messages")
 
     # Time to visualize the graph
-    ring_min_max.visualize()
+    ring_min_max.visualize(animation_speed=animation_speed)
+    ring_min_max_plus.visualize(animation_speed=animation_speed)
 
 
 if __name__ == '__main__':
-    run_experiments(number_of_originators=5)
+    # direction is either Direction.LEFT or Direction.RIGHT
+    # animation_speed is initially set at 500. This is the number of milliseconds per frame. Increase this value
+    # to make the animation longer for each frame.
+    run_experiments(number_of_originators=5, size_of_ring=10, direction=Direction.RIGHT, animation_speed=500)

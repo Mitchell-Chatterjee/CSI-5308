@@ -14,6 +14,9 @@ class Message(ABC):
     def value(self, value):
         self._value = value
 
+    def __str__(self):
+        return self._value
+
 
 class ElectMessage(Message):
     def __init__(self, value: int, stage: int, counter: int):

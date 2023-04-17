@@ -2,6 +2,8 @@ import copy
 from enum import Enum
 import igraph as ig
 import matplotlib.pyplot as plt
+
+from Message import Message
 from State import State
 from Algorithms import Algorithm
 from threading import Thread
@@ -126,6 +128,8 @@ class Ring:
         # The following are used for animation
         # This will hold the sequence of labels for the animation. Seed it with the starting values.
         self._stage_list = [[copy.deepcopy(node) for node in self._nodes]]
+        # List of messages that we will display in the animation
+        self._message_list = ["Initial state"]
         # Index used for creating the animation at the end
         self._stage_index = 0
         # The dictionary containing the colours
@@ -209,8 +213,17 @@ class Ring:
 
             # Make a deepcopy of each node, so we can reference it later for animation
             self._stage_list.append([copy.deepcopy(node) for node in self._nodes])
-        # Append the final stage
+
+            # Append the message here
+            if len(node.message_buffer) == 0:
+                self._message_list.append(f"The node {node.value} has received no message")
+            else:
+                message: Message = node.message_buffer[-1]
+                self._message_list.append(f"The node {node.value} has received the message {message.value}")
+        # Append the final stage and message
         self._stage_list.append([copy.deepcopy(node) for node in self._nodes])
+        self._message_list.append(f"The node {node.value} has received no message")
+
         return
 
     def update_graph(self, ax, g, layout, frame):
@@ -229,20 +242,22 @@ class Ring:
             self._stage_index += 1
 
         vertex_colours = [self._colour_dict[node.state] for node in self._stage_list[self._stage_index]]
-        # TODO: Maintain a list of the vertex labels on each update and iterate through them as we update the animation
 
+        # Add a caption for what's happening right now
+        # ax.text(2, 6, r'an equation: $E=mc^2$', fontsize=15)
+        # ax.text(3, 8, f"Send message {self._stage_index}", style='italic',
+        #         bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10})
+        ax.set_title(self._message_list[self._stage_index])
         ig.plot(g, target=ax, vertex_label=vertex_labels, vertex_color=vertex_colours)
-
-
 
         return ax.get_children()
 
-    def visualize(self):
+    def visualize(self, animation_speed):
         g = ig.Graph.Ring(len(self._nodes), directed=False)
         layout = g.layout_circle()
         fig, ax = plt.subplots()
         # TODO: Probably going to need to change len(self._nodes) to something else
         ani = animation.FuncAnimation(fig, partial(self.update_graph, ax, g, layout), len(self._stage_list),
-                                      interval=500, blit=True)
+                                      interval=animation_speed, blit=False)
         writergif = animation.PillowWriter(fps=1)
-        ani.save('basic_animation.gif', writer=writergif)
+        ani.save(f'animation_{type(self._algorithm).__name__}.gif', writer=writergif)

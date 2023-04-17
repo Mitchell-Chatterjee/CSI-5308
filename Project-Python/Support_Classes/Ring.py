@@ -254,7 +254,6 @@ class Ring:
         g = ig.Graph.Ring(len(self._nodes), directed=False)
         layout = g.layout_circle()
         fig, ax = plt.subplots()
-        # TODO: Probably going to need to change len(self._nodes) to something else
         ani = animation.FuncAnimation(fig, partial(self.update_graph, ax, g, layout), len(self._stage_list),
                                       interval=animation_speed, blit=False)
         writergif = animation.PillowWriter(fps=1)

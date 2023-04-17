@@ -32,12 +32,12 @@ anything you like. However, the animation will take a long time to render if the
 
 To modify the following hyperparameters. Simply change the value in the call to the function `run_experiments`.
 
-**number_of_originators** defines how many originators there are in the algorithm. This value cannot be greater than 
+**number_of_originators:** Defines how many originators there are in the algorithm. This value cannot be greater than 
 the size of the ring.
 
-**size_of_the_ring** defines the size of the ring.
+**size_of_ring:** Defines the size of the ring.
 
-**direction** is either Direction.LEFT or Direction.RIGHT, and defines the direction in which messages are passed.
+**direction:** Is either Direction.LEFT or Direction.RIGHT, and defines the direction in which messages are passed.
 
-**animation_speed** is initially set at 500. This is the number of milliseconds per frame. Increase this value
+**animation_speed:** Is initially set at 500. This is the number of milliseconds per frame. Increase this value
 to make the animation longer for each frame.

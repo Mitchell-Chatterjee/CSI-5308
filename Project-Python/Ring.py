@@ -1,3 +1,4 @@
+import copy
 from enum import Enum
 import igraph as ig
 import matplotlib.pyplot as plt
@@ -122,6 +123,15 @@ class Ring:
         # Create the ring
         self.create_ring(number_of_originators=number_of_originators)
 
+        # The following are used for animation
+        # This will hold the sequence of labels for the animation. Seed it with the starting values.
+        self._stage_list = [[copy.deepcopy(node) for node in self._nodes]]
+        # Index used for creating the animation at the end
+        self._stage_index = 0
+        # The dictionary containing the colours
+        self._colour_dict = {State.CANDIDATE: "green", State.ORIGINATOR: "green", State.LEADER: "red",
+                             State.ASLEEP: "grey", State.DEFEATED: "grey"}
+
     @property
     def nodes(self):
         return self._nodes
@@ -129,6 +139,10 @@ class Ring:
     @property
     def direction(self):
         return self._direction
+
+    @property
+    def stage_list(self):
+        return self._stage_list
 
     @direction.setter
     def direction(self, direction):
@@ -192,6 +206,11 @@ class Ring:
         while node.act(direction, algorithm):
             node = node.right if direction == Direction.RIGHT else node.left
             self._messages += 1
+
+            # Make a deepcopy of each node, so we can reference it later for animation
+            self._stage_list.append([copy.deepcopy(node) for node in self._nodes])
+        # Append the final stage
+        self._stage_list.append([copy.deepcopy(node) for node in self._nodes])
         return
 
     def update_graph(self, ax, g, layout, frame):
@@ -202,43 +221,28 @@ class Ring:
         ax.set_xlim(-1.5, 1.5)
         ax.set_ylim(-1.5, 1.5)
 
-        if frame < 10:
-            # Plot subgraph
-            gd = g.subgraph(range(frame))
-        elif frame == 10:
-            # In the second-to-last frame, plot all vertices but skip the last
-            # edge, which will only be shown in the last frame
-            gd = g.copy()
-            gd.delete_edges(9)
-        else:
-            # Last frame
-            gd = g
+        # Set the colours for this stage and increase the stage index
+        vertex_labels = [node.value for node in self._stage_list[self._stage_index]]
 
-        vertex_labels = [node.value for node in self._nodes]
-        colour_dict = {State.CANDIDATE: "blue", State.ORIGINATOR: "blue", State.LEADER: "red", State.ASLEEP: "grey",
-                       State.DEFEATED: "grey"}
-        vertex_colours = [colour_dict[node.state] for node in self._nodes]
-        ig.plot(gd, target=ax, layout=layout[:frame], vertex_label=vertex_labels, vertex_color=vertex_colours)
+        # Only move the to the next stage if we have moved to the next frame
+        if self._stage_index < frame:
+            self._stage_index += 1
 
-        # Capture handles for blitting
-        if frame == 0:
-            nhandles = 0
-        elif frame == 1:
-            nhandles = 1
-        elif frame < 11:
-            # vertex, 2 for each edge
-            nhandles = 3 * frame
-        else:
-            # The final edge closing the circle
-            nhandles = 3 * (frame - 1) + 2
+        vertex_colours = [self._colour_dict[node.state] for node in self._stage_list[self._stage_index]]
+        # TODO: Maintain a list of the vertex labels on each update and iterate through them as we update the animation
 
-        handles = ax.get_children()[:nhandles]
-        return handles
+        ig.plot(g, target=ax, vertex_label=vertex_labels, vertex_color=vertex_colours)
+
+
+
+        return ax.get_children()
 
     def visualize(self):
         g = ig.Graph.Ring(len(self._nodes), directed=False)
         layout = g.layout_circle()
         fig, ax = plt.subplots()
-        ani = animation.FuncAnimation(fig, partial(self.update_graph, ax, g, layout), 12, interval=500, blit=True)
+        # TODO: Probably going to need to change len(self._nodes) to something else
+        ani = animation.FuncAnimation(fig, partial(self.update_graph, ax, g, layout), len(self._stage_list),
+                                      interval=500, blit=True)
         writergif = animation.PillowWriter(fps=1)
         ani.save('basic_animation.gif', writer=writergif)

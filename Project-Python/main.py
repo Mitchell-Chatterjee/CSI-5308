@@ -24,9 +24,6 @@ def run_experiments(number_of_originators=2, size_of_ring=10, direction=Directio
     ring_min_max = Ring(nodes_min_max, direction, min_max, number_of_originators)
     ring_min_max_plus = Ring(nodes_min_max_plus, direction, min_max_plus, number_of_originators)
 
-    # Time to visualize the graph
-    ring_min_max.visualize()
-
     # Print all edges in order
     print(f"The edges (in direction {direction.value}) for the ring executing min-max are: "
           f"{[elem.get_edge(Direction.RIGHT) for elem in ring_min_max.nodes]}")
@@ -38,6 +35,10 @@ def run_experiments(number_of_originators=2, size_of_ring=10, direction=Directio
         ring_min_max.leader_election()
     print(f"We have elected a leader for min-max: {leader_node_min_max}")
     print(f"It required a total of {messages_min_max} messages\n\n")
+
+    # Time to visualize the graph
+    # TODO: Move this from here
+    ring_min_max.visualize()
 
     leader_node_min_max_plus, messages_min_max_plus = \
         ring_min_max_plus.leader_election()

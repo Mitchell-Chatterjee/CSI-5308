@@ -47,5 +47,8 @@ If you would like to only compare the performance of the two algorithms, you can
 animation in order to scale the program to even greater sizes. As the animation becomes very computationally intensive
 as the size of the ring grows.
 
-Simply comment out the following lines in `main.ipynb` and re-run all the code cells from the beginning.
+Simply add the `animation=False` parameter to the function call `run_experiments`
+![img_5.png](img_5.png)
+
+Or comment out the following lines in `main.ipynb` and re-run all the code cells from the beginning.
 ![img_4.png](img_4.png)

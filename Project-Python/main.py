@@ -50,4 +50,4 @@ if __name__ == '__main__':
     # direction is either Direction.LEFT or Direction.RIGHT
     # animation_speed is initially set at 500. This is the number of milliseconds per frame. Increase this value
     # to make the animation longer for each frame.
-    run_experiments(number_of_originators=5, size_of_ring=10, direction=Direction.RIGHT, animation_speed=500)
+    run_experiments(number_of_originators=5, size_of_ring=15, direction=Direction.RIGHT, animation_speed=500)

@@ -41,3 +41,11 @@ the size of the ring.
 
 **animation_speed:** Is initially set at 500. This is the number of milliseconds per frame. Increase this value
 to make the animation longer for each frame.
+
+### Comparing Performance
+If you would like to only compare the performance of the two algorithms, you can comment out the lines that create the
+animation in order to scale the program to even greater sizes. As the animation becomes very computationally intensive
+as the size of the ring grows.
+
+Simply comment out the following lines in `main.ipynb` and re-run all the code cells from the beginning.
+![img_4.png](img_4.png)

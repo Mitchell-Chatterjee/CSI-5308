@@ -20,7 +20,7 @@ selecting "Run all" from the Runtime drop-down menu in the top left.
 
 The program will run and produce two gifs in the directory to which you have added the four files. These gifs will
 be named "animation_MinMax.gif" and "animation_MinMaxPlus.gif". They make take some time to show up in the
-directory.
+directory. You can then download them and watch them run in a browser or another program for executing gifs.
 ![img_2.png](img_2.png)
 
 You will also be able to see the outputs for the number of messages produced in each round.

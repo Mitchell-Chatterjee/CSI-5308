@@ -1,4 +1,4 @@
-# CSI-5308
+# Distributed Leader Election in a Ring
 Project for course CSI-5308. This project is an implementation of the min-max and min-max+ algorithms for [distributed
 leader election in a ring](https://www.geeksforgeeks.org/what-is-ring-election-algorithm/).
 ***
